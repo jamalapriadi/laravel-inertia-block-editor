@@ -1,0 +1,26 @@
+{
+    "name": "jamalapr/laravel-inertia-block-editor",
+    "description": "Reusable Laravel, Inertia, and React block editor with nested layout blocks.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": "^8.2",
+        "illuminate/contracts": "^11.0|^12.0|^13.0",
+        "illuminate/database": "^11.0|^12.0|^13.0",
+        "illuminate/support": "^11.0|^12.0|^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Jamalapr\\InertiaBlockEditor\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jamalapr\\InertiaBlockEditor\\InertiaBlockEditorServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
