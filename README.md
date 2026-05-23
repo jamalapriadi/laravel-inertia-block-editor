@@ -1,38 +1,40 @@
 # Laravel Inertia Block Editor
 
-Reusable Laravel package untuk block editor berbasis Inertia + React. Package ini menyediakan:
+Reusable Laravel package for building a block editor with Inertia.js and React. It provides the backend storage layer, validation rules, services, and publishable React components needed to add a nested block editor to Laravel applications.
 
-- Migration polymorphic `content_blocks`
-- Trait `HasBlocks` untuk model seperti `Post`, `Page`, atau model lain
-- Service `BlockTreeService` untuk simpan dan load nested block tree
-- Validation rule `ValidBlocks`
-- Optional JSON controller route
-- React component publishable: `BlockBuilder`, `BlockRenderer`, `BlockEditor`, `StructureTree`
-- Basic blocks: Heading, Paragraph, Rich Editor, Image, Button, Icon, Divider, Spacer, Table
-- Layout blocks: Section, Container, Grid, Columns, Flex Row, Flex Column, Card, Tabs, Accordion, Slider
+## Features
 
-## 1. Install
+- Polymorphic `content_blocks` migration
+- `HasBlocks` trait for models such as `Post`, `Page`, `Product`, or custom content models
+- `BlockTreeService` for saving and loading nested block trees
+- `ValidBlocks` validation rule
+- Optional JSON controller route for saving block trees
+- Publishable React components: `BlockBuilder`, `BlockRenderer`, `BlockEditor`, and `StructureTree`
+- Basic blocks: Heading, Paragraph, Rich Editor, Image, Button, Icon, Divider, Spacer, and Table
+- Layout blocks: Section, Container, Grid, Columns, Flex Row, Flex Column, Card, Tabs, Accordion, and Slider
 
-Untuk development lokal:
+## 1. Installation
+
+For local development, add the package as a path repository:
 
 ```bash
 composer config repositories.inertia-block-editor path packages/jamalapr/laravel-inertia-block-editor
 composer require jamalapr/laravel-inertia-block-editor:@dev
 ```
 
-Jika sudah dipublish ke GitHub/Packagist:
+After publishing the package to GitHub or Packagist, install it with:
 
 ```bash
 composer require jamalapr/laravel-inertia-block-editor
 ```
 
-Install dependency React yang dibutuhkan di project host:
+Install the required frontend dependencies in the host application:
 
 ```bash
 npm install @dnd-kit/core @dnd-kit/sortable lucide-react
 ```
 
-## 2. Publish Config, Migration, Dan React Assets
+## 2. Publish Config, Migration, And React Assets
 
 ```bash
 php artisan vendor:publish --tag=inertia-block-editor-config
@@ -41,15 +43,15 @@ php artisan vendor:publish --tag=inertia-block-editor-react
 php artisan migrate
 ```
 
-React assets akan masuk ke:
+The React assets will be published to:
 
 ```txt
 resources/js/vendor/inertia-block-editor
 ```
 
-## 3. Schema Migration
+## 3. Database Schema
 
-Package memakai table polymorphic agar block bisa dipasang ke banyak model.
+The package uses a polymorphic table, so blocks can belong to any Eloquent model.
 
 ```php
 Schema::create(config('inertia-block-editor.table', 'content_blocks'), function (Blueprint $table) {
@@ -66,15 +68,15 @@ Schema::create(config('inertia-block-editor.table', 'content_blocks'), function 
 });
 ```
 
-Karena menggunakan `morphs`, schema ini kompatibel untuk:
+Because the table uses `morphs`, the same schema works for:
 
 - `Post`
 - `Page`
 - `Product`
 - `LandingPage`
-- custom model lain
+- Any custom Eloquent model
 
-## 4. Tambahkan Trait Ke Model
+## 4. Add The Trait To A Model
 
 ```php
 <?php
@@ -90,7 +92,7 @@ class Post extends Model
 }
 ```
 
-## 5. Validasi Request
+## 5. Validate Block Payloads
 
 ```php
 <?php
@@ -118,9 +120,9 @@ class StorePostRequest extends FormRequest
 }
 ```
 
-`blocks` boleh dikirim sebagai array atau JSON string.
+The `blocks` field may be submitted as an array or a JSON string.
 
-## 6. Simpan Dan Edit Dari Controller
+## 6. Save And Edit Blocks From A Controller
 
 ```php
 <?php
@@ -180,106 +182,106 @@ class PostController
 }
 ```
 
-## 7. Gunakan Di Inertia React Page
+## 7. Use The Editor In An Inertia React Page
 
-Contoh `resources/js/pages/Posts/Create.tsx`:
+Example `resources/js/pages/Posts/Create.tsx`:
 
 ```tsx
-import { useForm } from '@inertiajs/react';
-import { BlockBuilder } from '@/vendor/inertia-block-editor';
-import type { BlockInstance } from '@/vendor/inertia-block-editor';
+import { useForm } from "@inertiajs/react";
+import { BlockBuilder } from "@/vendor/inertia-block-editor";
+import type { BlockInstance } from "@/vendor/inertia-block-editor";
 
 export default function Create() {
-    const { data, setData, post, processing } = useForm<{
-        title: string;
-        status: string;
-        blocks: BlockInstance[];
-    }>({
-        title: '',
-        status: 'draft',
-        blocks: [],
-    });
+  const { data, setData, post, processing } = useForm<{
+    title: string;
+    status: string;
+    blocks: BlockInstance[];
+  }>({
+    title: "",
+    status: "draft",
+    blocks: [],
+  });
 
-    return (
-        <form
-            onSubmit={(event) => {
-                event.preventDefault();
-                post('/posts');
-            }}
-            className="min-h-screen"
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        post("/posts");
+      }}
+      className="min-h-screen"
+    >
+      <header className="flex items-center gap-3 border-b p-4">
+        <input
+          value={data.title}
+          onChange={(event) => setData("title", event.target.value)}
+          className="h-10 flex-1 rounded border px-3"
+          placeholder="Post title"
+        />
+
+        <button
+          disabled={processing}
+          className="rounded bg-black px-4 py-2 text-white"
         >
-            <header className="flex items-center gap-3 border-b p-4">
-                <input
-                    value={data.title}
-                    onChange={(event) => setData('title', event.target.value)}
-                    className="h-10 flex-1 rounded border px-3"
-                    placeholder="Post title"
-                />
+          Save
+        </button>
+      </header>
 
-                <button
-                    disabled={processing}
-                    className="rounded bg-black px-4 py-2 text-white"
-                >
-                    Save
-                </button>
-            </header>
-
-            <BlockBuilder
-                value={data.blocks}
-                onChange={(blocks) => setData('blocks', blocks)}
-                className="border-0"
-            />
-        </form>
-    );
+      <BlockBuilder
+        value={data.blocks}
+        onChange={(blocks) => setData("blocks", blocks)}
+        className="border-0"
+      />
+    </form>
+  );
 }
 ```
 
-Contoh `Edit.tsx`:
+Example `Edit.tsx`:
 
 ```tsx
-import { useForm } from '@inertiajs/react';
-import { BlockBuilder } from '@/vendor/inertia-block-editor';
-import type { BlockInstance } from '@/vendor/inertia-block-editor';
+import { useForm } from "@inertiajs/react";
+import { BlockBuilder } from "@/vendor/inertia-block-editor";
+import type { BlockInstance } from "@/vendor/inertia-block-editor";
 
 export default function Edit({
-    post,
-    blocks,
+  post,
+  blocks,
 }: {
-    post: any;
-    blocks: BlockInstance[];
+  post: any;
+  blocks: BlockInstance[];
 }) {
-    const { data, setData, put, processing } = useForm({
-        title: post.title,
-        status: post.status,
-        blocks,
-    });
+  const { data, setData, put, processing } = useForm({
+    title: post.title,
+    status: post.status,
+    blocks,
+  });
 
-    return (
-        <form
-            onSubmit={(event) => {
-                event.preventDefault();
-                put(`/posts/${post.id}`);
-            }}
-        >
-            <input
-                value={data.title}
-                onChange={(event) => setData('title', event.target.value)}
-            />
+  return (
+    <form
+      onSubmit={(event) => {
+        event.preventDefault();
+        put(`/posts/${post.id}`);
+      }}
+    >
+      <input
+        value={data.title}
+        onChange={(event) => setData("title", event.target.value)}
+      />
 
-            <BlockBuilder
-                value={data.blocks}
-                onChange={(nextBlocks) => setData('blocks', nextBlocks)}
-            />
+      <BlockBuilder
+        value={data.blocks}
+        onChange={(nextBlocks) => setData("blocks", nextBlocks)}
+      />
 
-            <button disabled={processing}>Update</button>
-        </form>
-    );
+      <button disabled={processing}>Update</button>
+    </form>
+  );
 }
 ```
 
 ## 8. Optional Generic Save Endpoint
 
-Aktifkan di `config/inertia-block-editor.php`:
+Enable the built-in route in `config/inertia-block-editor.php`:
 
 ```php
 'routes' => [
@@ -295,46 +297,46 @@ Aktifkan di `config/inertia-block-editor.php`:
 ],
 ```
 
-Lalu kirim request:
+Then send a request like this:
 
 ```ts
-await fetch('/dashboard/block-editor/blocks', {
-    method: 'POST',
-    headers: {
-        'Content-Type': 'application/json',
-        'X-CSRF-TOKEN':
-            document
-                .querySelector('meta[name="csrf-token"]')
-                ?.getAttribute('content') ?? '',
-    },
-    body: JSON.stringify({
-        blockable_type: 'post',
-        blockable_id: 1,
-        blocks,
-    }),
+await fetch("/dashboard/block-editor/blocks", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    "X-CSRF-TOKEN":
+      document
+        .querySelector('meta[name="csrf-token"]')
+        ?.getAttribute("content") ?? "",
+  },
+  body: JSON.stringify({
+    blockable_type: "post",
+    blockable_id: 1,
+    blocks,
+  }),
 });
 ```
 
-## 9. Render Di Frontend Publik
+## 9. Render Blocks On A Public Page
 
 ```tsx
-import { BlockRenderer } from '@/vendor/inertia-block-editor';
-import type { BlockInstance } from '@/vendor/inertia-block-editor';
+import { BlockRenderer } from "@/vendor/inertia-block-editor";
+import type { BlockInstance } from "@/vendor/inertia-block-editor";
 
 export default function Show({ blocks }: { blocks: BlockInstance[] }) {
-    return (
-        <main>
-            {blocks.map((block) => (
-                <BlockRenderer key={block.id} block={block} />
-            ))}
-        </main>
-    );
+  return (
+    <main>
+      {blocks.map((block) => (
+        <BlockRenderer key={block.id} block={block} />
+      ))}
+    </main>
+  );
 }
 ```
 
 ## 10. Custom Block Types
 
-Tambahkan type baru ke config:
+Add the new block type to the package config:
 
 ```php
 'allowed_types' => [
@@ -343,10 +345,10 @@ Tambahkan type baru ke config:
 ],
 ```
 
-Lalu publish/edit React registry di:
+Then edit the published React registry:
 
 ```txt
 resources/js/vendor/inertia-block-editor/editor/blocks/registry.ts
 ```
 
-Tambahkan component block baru ke registry agar bisa dirender dan diedit.
+Register the new block component so it can be rendered and edited.
